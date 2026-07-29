@@ -17,20 +17,6 @@ body, html {
     overflow: hidden;
 }
 
-#back {
-    width: 100%;
-    height: 100vh;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
-}
-
-#back img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
 
 #top {
     position: relative;
@@ -248,41 +234,7 @@ body, html {
 }
 
 
-/* Ensure link text stays layered above the incoming background fill */
-#nav a span {
-    position: relative;
-    z-index: 2;
-}
 
-/* The Sliding Capsule Background Fill Container */
-#nav a::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #1DB954; /* Spotify Signature Green */
-    z-index: 1;
-
-    /* Starts completely scaled down from the center-left and slides/pops outward */
-    transform: scaleX(0);
-    transform-origin: left;
-    border-radius: 100px;
-
-    transition: transform 0.4s cubic-bezier(0.25, 1, 0.3, 1);
-}
-
-/* ==========================================
-   INTERACTIVE HOVER STATE CHANGES
-   ========================================== */
-#nav a:hover {
-    color: #000000; /* Snaps text to black so it punches out over the neon green fill */
-}
-
-#nav a:hover::before {
-    transform: scaleX(1); /* Expands the green pill background instantly */
-}
 /* ==========================================
    HERO INTERIOR LAYOUT
    ========================================== */
@@ -467,7 +419,7 @@ body, html {
 }
 
 /* Header Text formatting */
-#heroright p:nth-child(1) {
+#heroright > p:first-of-type {
     font-size: 10px;
     font-weight: 700;
     letter-spacing: 3px;
@@ -710,54 +662,6 @@ body, html {
 .master-play:active {
     transform: scale(0.95);
 }
-#footer-collab {
-    position: absolute;
-    bottom: 25px; /* Pinned neatly near the bottom edge */
-    left: 50%;
-    transform: translateX(-50%); /* Geometric horizontal center */
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px; /* Spaces the tiny text line and the signature image */
-
-    user-select: none;
-    pointer-events: none; /* Keeps WebGL background interactions unblocked */
-    white-space: nowrap;
-    text-align: center;
-}
-
-/* Tiny technical label above the signature */
-#footer-collab .collab-tag {
-    color: rgba(255, 255, 255, 0.35); /* Elegant muted gray */
-    font-size: 10px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    transition: color 0.3s ease;
-}
-
-/* Styling the Signature Image */
-#footer-collab .collab-logo {
-    height: 38px; /* Keeps the script elegant and compact, not overwhelmingly large */
-    width: auto;
-    object-fit: contain;
-
-    /* Mix of opacity and slight brightness tweak to blend the beige asset into a dark canvas */
-    opacity: 0.5;
-    filter: drop-shadow(0px 2px 8px rgba(0, 0, 0, 0.5));
-    transition: opacity 0.4s ease, filter 0.4s ease, transform 0.4s ease;
-}
-
-/* Interactive Wake Up state on mouse approach */
-#workingarea:hover #footer-collab .collab-tag {
-    color: rgba(255, 255, 255, 0.7);
-}
-
-#workingarea:hover #footer-collab .collab-logo {
-    opacity: 0.9;
-    transform: scale(1.02); /* Tiny visual pulse on hover */
-}
 
 /* ==========================================
    MOBILE & TABLET RESPONSIVE OVERRIDES
@@ -845,19 +749,7 @@ body, html {
         font-size: 1.1rem;
     }
 
-    /* 5. Fine-Tune Bottom Center Signature Logo Position */
-    #footer-collab {
-        position: relative;
-        bottom: 0;
-        left: 0;
-        transform: none;
-        margin-top: 40px;
-        width: 100%;
-    }
 
-    #footer-collab .collab-logo {
-        height: 28px; /* Scale down script size for mobile display aesthetics */
-    }
 }
 
 /* ==========================================

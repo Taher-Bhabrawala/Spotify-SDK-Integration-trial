@@ -160,7 +160,7 @@ export function useTrackTextures(
         setTrigger(p => p + 1);
       },
       undefined,
-      (err) => console.error("useTrackTextures: Error loading hover texture:", err)
+      (err: unknown) => console.error("useTrackTextures: Error loading hover texture:", err)
     );
   }, [hoverTrackUrl]);
 

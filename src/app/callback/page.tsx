@@ -33,7 +33,6 @@ function CallbackHandler() {
     exchangeCodeForToken(code).then((tokenData) => {
       if (tokenData) {
         console.log("[Spotify Auth] ✅ Login succeeded! Access token stored.");
-        console.log("[Spotify Auth] Token preview:", tokenData.access_token.slice(0, 20) + "…");
         setStatus("success");
       } else {
         setStatus("error");

@@ -36,21 +36,21 @@ export function useChillSynthesizer({
       
       // Initialize timers on first frame
       if (nextTriggerMsRef.current === 0) {
-        nextTriggerMsRef.current = time + 500;
-        nextBassTriggerMsRef.current = time + 2000;
+        nextTriggerMsRef.current = time + 2000;
+        nextBassTriggerMsRef.current = time;
       }
 
-      // Sparkles Timer (0.5s - 1.5s)
+      // Sparkles Timer (2.0s - 3.0s)
       if (time >= nextTriggerMsRef.current) {
         isImpact = true;
         lastTriggerMsRef.current = time;
-        nextTriggerMsRef.current = time + 500 + Math.random() * 1000;
+        nextTriggerMsRef.current = time + 2000 + Math.random() * 1000;
       }
 
-      // Independent Sub-Bass Timer (2.0s - 4.0s)
+      // Independent Sub-Bass Timer (0.0s - 2.0s)
       if (time >= nextBassTriggerMsRef.current) {
         lastBassTriggerMsRef.current = time;
-        nextBassTriggerMsRef.current = time + 2000 + Math.random() * 2000;
+        nextBassTriggerMsRef.current = time + Math.random() * 2000;
       }
 
       const timeSinceTrigger = time - lastTriggerMsRef.current;

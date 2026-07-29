@@ -32,15 +32,7 @@ export const LOCAL_PLAYLISTS = {
       albumArtUrl: "/images/my-eyes.webp",
       audioUrl: "/audio/travis-scott-my-eyes.mp3",
     },
-    {
-      id: "local-chill-4",
-      name: "ocean eyes",
-      primaryArtist: "Billie Eilish",
-      featuredArtists: [],
-      albumName: "dont smile at me",
-      albumArtUrl: "/images/cover3.jpg",
-      audioUrl: "/audio/billie-eilish-ocean-eyes.mp3",
-    },
+
     {
       id: "local-chill-5",
       name: "CHIHIRO",
@@ -119,30 +111,42 @@ export const LOCAL_PLAYLISTS = {
   focus: [
     {
       id: "local-focus-1",
-      name: "bury a friend",
-      primaryArtist: "Billie Eilish",
+      name: "Aruarian Dance",
+      primaryArtist: "Nujabes",
       featuredArtists: [],
-      albumName: "WHEN WE ALL FALL ASLEEP, WHERE DO WE GO?",
-      albumArtUrl: "/images/billie_2.jpg",
-      audioUrl: "/audio/billie-eilish-bury-a-friend.mp3",
+      albumName: "Samurai Champloo Music Record: Departure",
+      albumArtUrl: "/images/aruarian-dance.jpg",
+      audioUrl: "/audio/aruarian-dance.mp3",
     },
     {
       id: "local-focus-2",
-      name: "dont smile at me",
+      name: "Snowman",
+      primaryArtist: "WYS",
+      featuredArtists: [],
+      albumName: "1 A.M Study Session",
+      albumArtUrl: "/images/snowman.jpg",
+      audioUrl: "/audio/snowman.mp3",
+    }
+  ],
+  neutral: [
+    {
+      id: "local-neutral-1",
+      name: "The Less I Know The Better",
+      primaryArtist: "Tame Impala",
+      featuredArtists: [],
+      albumName: "Currents",
+      albumArtUrl: "/images/currents.jpg",
+      audioUrl: "/audio/the-less-i-know-the-better.mp3",
+    },
+
+    {
+      id: "local-neutral-4",
+      name: "ocean eyes",
       primaryArtist: "Billie Eilish",
       featuredArtists: [],
       albumName: "dont smile at me",
       albumArtUrl: "/images/cover3.jpg",
-      audioUrl: "/audio/billie-eilish-dont-smile-at-me.mp3",
-    },
-    {
-      id: "local-focus-3",
-      name: "LUNCH",
-      primaryArtist: "Billie Eilish",
-      featuredArtists: [],
-      albumName: "HIT ME HARD AND SOFT",
-      albumArtUrl: "/images/cover2.jpg",
-      audioUrl: "/audio/billie-eilish-lunch.mp3",
+      audioUrl: "/audio/billie-eilish-ocean-eyes.mp3",
     }
   ]
 };
@@ -155,7 +159,7 @@ export interface AudioReactivityData {
   impact: number; // Volume transient (spikes) for hi-hats/snares
 }
 
-export function useLocalPlayer(mood: "chill" | "energy" | "focus", isEnabled: boolean) {
+export function useLocalPlayer(mood: "chill" | "energy" | "focus" | "neutral", isEnabled: boolean) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const volumeRef = useRef<number>(0.5); // Add ref to avoid stale closures
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -169,10 +173,11 @@ export function useLocalPlayer(mood: "chill" | "energy" | "focus", isEnabled: bo
   
   // Cache the audio data per-frame so multiple components calling it don't cause double-decay
   const lastProcessedTimeRef = useRef<number>(0);
-  const cachedAudioDataRef = useRef<any>(null);
+  const cachedAudioDataRef = useRef<AudioReactivityData | null>(null);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const playlist = LOCAL_PLAYLISTS[mood];
+  const skipToNextRef = useRef<() => void>(undefined);
 
   const [state, setState] = useState<SpotifyPlayerState>({
     currentTrack: null,
@@ -206,7 +211,7 @@ export function useLocalPlayer(mood: "chill" | "energy" | "focus", isEnabled: bo
       });
       
       audio.addEventListener("ended", () => {
-        skipToNext();
+        if (skipToNextRef.current) skipToNextRef.current();
       });
 
       audio.addEventListener("loadedmetadata", () => {
@@ -310,8 +315,12 @@ export function useLocalPlayer(mood: "chill" | "energy" | "focus", isEnabled: bo
   }, []);
 
   const skipToNext = useCallback(async () => {
-    setCurrentIndex(i => (i + 1) % playlist.length);
+    setCurrentIndex((i) => (i + 1) % playlist.length);
   }, [playlist.length]);
+
+  useEffect(() => {
+    skipToNextRef.current = skipToNext;
+  }, [skipToNext]);
 
   const skipToPrevious = useCallback(async () => {
     if (audioRef.current && audioRef.current.currentTime > 3) {

@@ -1,7 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
-
+// No React imports needed
 // ──────────────────────────────────────────
 //  Accessibility Settings Type
 // ──────────────────────────────────────────

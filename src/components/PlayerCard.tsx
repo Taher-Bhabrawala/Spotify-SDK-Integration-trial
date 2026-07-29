@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 export function formatMs(ms: number): string {
   const totalSec = Math.floor(ms / 1000);
@@ -13,7 +13,7 @@ interface PlayerCardProps {
   isPlayerActive: boolean;
   isLocal: boolean;
   currentSlideIndex: number;
-  staticImages: string[];
+
   staticTrackData: any[];
   backgroundUrl: string;
 }
@@ -24,7 +24,7 @@ export function PlayerCard({
   isPlayerActive,
   isLocal,
   currentSlideIndex,
-  staticImages,
+
   staticTrackData,
   backgroundUrl,
 }: PlayerCardProps) {

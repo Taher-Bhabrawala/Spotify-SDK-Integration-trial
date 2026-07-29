@@ -13,8 +13,6 @@ import type { AccessibilitySettings } from "@/contexts/AccessibilityContext";
 
 interface FocusSceneProps {
   textures: TrackTextures;
-  mouseTarget: React.MutableRefObject<THREE.Vector2>;
-  hoverActive: boolean;
   playbackState?: PlaybackState | null;
   boostValues: { bass: number; mids: number; highs: number };
   accessibility?: AccessibilitySettings;
@@ -52,10 +50,6 @@ const vertexShader = /* glsl */ `
 
 // ──────────────────────────────────────────
 //  GLSL – Fragment Shader
-//
-//  Single clean album art with:
-//  - Slight desaturation (muted, calm feel)
-//  - Strong vignette (draws the eye inward)
 // ──────────────────────────────────────────
 
 const fragmentShader = /* glsl */ `
@@ -89,15 +83,15 @@ const fragmentShader = /* glsl */ `
     vec4 tex2 = texture2D(uTexture2, uv2);
     vec4 color = mix(tex1, tex2, uProgress);
 
-    // Desaturation — muted, calm colors
+    // Desaturation — gently muted for focus without being lifeless
     float lum = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
-    vec3 desat = mix(color.rgb, vec3(lum), 0.55);
-    desat *= 0.45;
+    vec3 desat = mix(color.rgb, vec3(lum), 0.25); // Only 25% desaturated now (was 55%)
+    desat *= 0.85; // Much brighter base brightness (was 45%)
 
-    // Vignette — strong, draws the eye to center
+    // Vignette — draws the eye to center but softer than before
     float dist = length(vUv - 0.5) * 1.414;
     float vig = smoothstep(0.15, 1.1, dist);
-    desat *= 1.0 - vig * 0.6;
+    desat *= 1.0 - vig * 0.4; // Softer vignette effect (was 0.6)
 
     gl_FragColor = vec4(desat, 1.0);
   }
@@ -157,89 +151,10 @@ function FocusArtPlane({ textures }: { textures: TrackTextures }) {
 }
 
 // ──────────────────────────────────────────
-//  Geometric Frame (thin rectangular outline)
+//  Unified Geometric Frame 
 // ──────────────────────────────────────────
 
-function GeometricFrame({
-  scale,
-  zOffset,
-  color,
-  playbackState,
-  reactive,
-  boostValues,
-  accessibility,
-}: {
-  scale: number;
-  zOffset: number;
-  color: string;
-  playbackState?: any;
-  reactive: boolean;
-  boostValues: { bass: number; mids: number; highs: number };
-  accessibility?: AccessibilitySettings;
-}) {
-  const { width, height } = useThree((s) => s.viewport);
-  const lineRef = useRef<THREE.LineSegments>(null);
-  const smoothBassRef = useRef(0);
-
-  // Build a rectangle out of line segments
-  const geometry = useMemo(() => {
-    const hw = 0.5; // half-width
-    const hh = 0.5; // half-height
-    const points = [
-      // Bottom edge
-      -hw, -hh, 0, hw, -hh, 0,
-      // Right edge
-      hw, -hh, 0, hw, hh, 0,
-      // Top edge
-      hw, hh, 0, -hw, hh, 0,
-      // Left edge
-      -hw, hh, 0, -hw, -hh, 0,
-    ];
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.Float32BufferAttribute(points, 3));
-    return geo;
-  }, []);
-
-  useFrame((state) => {
-    const line = lineRef.current;
-    if (!line) return;
-
-    let bassValue = 0;
-    if (reactive && playbackState && (playbackState as any).getAudioData) {
-      const data = (playbackState as any).getAudioData();
-      if (data) {
-        bassValue = data.bass * boostValues.bass;
-      }
-    }
-
-    // Smooth the bass for a gentle breath
-    smoothBassRef.current += (bassValue - smoothBassRef.current) * 0.06;
-    const audioBreath = (reactive && accessibility?.frameBreathing !== false) ? smoothBassRef.current * 0.015 : 0;
-
-    // Brushed up wave interference math for gentle, organic morphing
-    const time = state.clock.elapsedTime * 1000;
-    const waveX = Math.sin(time / 2300) * 0.5 + 0.5; // 0 to 1
-    const waveY = Math.sin(time / 3700) * 0.5 + 0.5; // 0 to 1
-    const waveBreathX = (reactive && accessibility?.frameBreathing !== false) ? waveX * 0.02 : 0;
-    const waveBreathY = (reactive && accessibility?.frameBreathing !== false) ? waveY * 0.02 : 0;
-
-    const sx = width * scale + audioBreath + waveBreathX;
-    const sy = height * scale + audioBreath + waveBreathY;
-    line.scale.set(sx, sy, 1);
-  });
-
-  return (
-    <lineSegments ref={lineRef} geometry={geometry} position={[0, 0, zOffset]}>
-      <lineBasicMaterial color={color} transparent opacity={0.25} />
-    </lineSegments>
-  );
-}
-
-// ──────────────────────────────────────────
-//  Synthetic Geometric Frame (Spotify mode — no Web Audio)
-// ──────────────────────────────────────────
-
-function SyntheticGeometricFrame({
+function UnifiedGeometricFrame({
   scale,
   zOffset,
   color,
@@ -261,7 +176,8 @@ function SyntheticGeometricFrame({
   const smoothBassRef = useRef(0);
   const { update: updatePulse } = useSyntheticPulse(120);
 
-  // Build a rectangle out of line segments
+  const hasLiveAudio = playbackState && (playbackState as any).getAudioData;
+
   const geometry = useMemo(() => {
     const hw = 0.5;
     const hh = 0.5;
@@ -282,18 +198,23 @@ function SyntheticGeometricFrame({
 
     let bassValue = 0;
     if (reactive) {
-      const pulse = updatePulse(delta, playbackState || null);
-      bassValue = pulse;
+      if (hasLiveAudio) {
+        const data = (playbackState as any).getAudioData();
+        if (data) {
+          bassValue = data.bass * boostValues.bass;
+        }
+      } else {
+        const pulse = updatePulse(delta, playbackState || null);
+        bassValue = pulse;
+      }
     }
 
-    // Smooth the bass for a gentle breath
     smoothBassRef.current += (bassValue - smoothBassRef.current) * 0.06;
     const audioBreath = (reactive && accessibility?.frameBreathing !== false) ? smoothBassRef.current * 0.015 : 0;
 
-    // Brushed up wave interference math for gentle, organic morphing
     const time = state.clock.elapsedTime * 1000;
-    const waveX = Math.sin(time / 2300) * 0.5 + 0.5; // 0 to 1
-    const waveY = Math.sin(time / 3700) * 0.5 + 0.5; // 0 to 1
+    const waveX = Math.sin(time / 2300) * 0.5 + 0.5;
+    const waveY = Math.sin(time / 3700) * 0.5 + 0.5;
     const waveBreathX = (reactive && accessibility?.frameBreathing !== false) ? waveX * 0.02 : 0;
     const waveBreathY = (reactive && accessibility?.frameBreathing !== false) ? waveY * 0.02 : 0;
 
@@ -313,20 +234,14 @@ function SyntheticGeometricFrame({
 //  Main Export
 // ──────────────────────────────────────────
 
-export function FocusScene({ textures, mouseTarget, hoverActive, playbackState, boostValues, accessibility }: FocusSceneProps) {
-  const hasLiveAudio = playbackState && (playbackState as any).getAudioData;
-
-  // The inner frame is always static (reactive=false), so it doesn't need a synthetic variant.
-  // The outer frame breathes with bass — use synthetic when no live audio.
-  const ReactiveFrame = hasLiveAudio ? GeometricFrame : SyntheticGeometricFrame;
-
+export function FocusScene({ textures, playbackState, boostValues, accessibility }: FocusSceneProps) {
   return (
     <>
       {/* Single, clean album art */}
       <FocusArtPlane textures={textures} />
 
       {/* Inner frame — static */}
-      <GeometricFrame
+      <UnifiedGeometricFrame
         scale={0.72}
         zOffset={0.01}
         color="#ccaa77"
@@ -337,7 +252,7 @@ export function FocusScene({ textures, mouseTarget, hoverActive, playbackState, 
       />
 
       {/* Outer frame — barely breathes with bass */}
-      <ReactiveFrame
+      <UnifiedGeometricFrame
         scale={0.82}
         zOffset={0.02}
         color="#ccaa77"

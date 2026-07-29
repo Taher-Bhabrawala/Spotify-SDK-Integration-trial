@@ -7,6 +7,7 @@ import { useTrackTextures } from "@/hooks/useTrackTextures";
 import { ChillScene } from "./moods/ChillScene";
 import { EnergyScene } from "./moods/EnergyScene";
 import { FocusScene } from "./moods/FocusScene";
+import { NeutralScene } from "./moods/NeutralScene";
 import type { AccessibilitySettings } from "@/contexts/AccessibilityContext";
 
 // ──────────────────────────────────────────
@@ -16,7 +17,7 @@ import type { AccessibilitySettings } from "@/contexts/AccessibilityContext";
 interface LiquidBackgroundSceneProps {
   currentTrackUrl: string;
   hoverTrackUrl: string | null;
-  mood: "chill" | "energy" | "focus";
+  mood: "chill" | "energy" | "focus" | "neutral";
   mouseTarget: React.MutableRefObject<THREE.Vector2>;
   hoverActive: boolean;
   playbackState: any;
@@ -40,13 +41,16 @@ function LiquidBackgroundScene({
   return (
     <>
       {mood === "chill" && (
-        <ChillScene textures={textures} mouseTarget={mouseTarget} hoverActive={hoverActive} playbackState={playbackState} boostValues={boostValues} accessibility={accessibility} />
+        <ChillScene textures={textures} mouseTarget={mouseTarget} playbackState={playbackState} boostValues={boostValues} accessibility={accessibility} />
       )}
       {mood === "energy" && (
-        <EnergyScene textures={textures} mouseTarget={mouseTarget} hoverActive={hoverActive} playbackState={playbackState} boostValues={boostValues} accessibility={accessibility} />
+        <EnergyScene textures={textures} mouseTarget={mouseTarget} playbackState={playbackState} boostValues={boostValues} accessibility={accessibility} />
       )}
       {mood === "focus" && (
-        <FocusScene textures={textures} mouseTarget={mouseTarget} hoverActive={hoverActive} playbackState={playbackState} boostValues={boostValues} accessibility={accessibility} />
+        <FocusScene textures={textures} playbackState={playbackState} boostValues={boostValues} accessibility={accessibility} />
+      )}
+      {mood === "neutral" && (
+        <NeutralScene textures={textures} />
       )}
     </>
   );
@@ -59,7 +63,7 @@ function LiquidBackgroundScene({
 interface LiquidBackgroundProps {
   currentTrackUrl: string;
   hoverTrackUrl: string | null;
-  mood: "chill" | "energy" | "focus";
+  mood: "chill" | "energy" | "focus" | "neutral";
   playbackState?: any;
   boostValues: { bass: number; mids: number; highs: number };
   accessibility?: AccessibilitySettings;
@@ -128,4 +132,3 @@ export function LiquidBackground({
   );
 }
 
-export default LiquidBackground;

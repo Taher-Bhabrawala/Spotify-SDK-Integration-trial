@@ -10,7 +10,6 @@ import type { AccessibilitySettings } from "@/contexts/AccessibilityContext";
 interface EnergySceneProps {
   textures: TrackTextures;
   mouseTarget: React.MutableRefObject<THREE.Vector2>;
-  hoverActive: boolean;
   playbackState?: PlaybackState | null;
   boostValues: { bass: number; mids: number; highs: number };
   accessibility?: AccessibilitySettings;

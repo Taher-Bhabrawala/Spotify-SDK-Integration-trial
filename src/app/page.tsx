@@ -33,13 +33,17 @@ const STATIC_TRACK_DATA = [
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [mood, setMood] = useState<"chill" | "energy" | "focus">("chill");
+  const [mood, setMood] = useState<"chill" | "energy" | "focus" | "neutral">("chill");
   const [boostValues, setBoostValues] = useState({ bass: 1.0, mids: 1.0, highs: 1.0 });
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [accessibilitySettings, setAccessibilitySettings] = useState<AccessibilitySettings>(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("a11ySettings");
-      if (saved) return JSON.parse(saved);
+      try {
+        const saved = localStorage.getItem("a11ySettings");
+        if (saved) return JSON.parse(saved);
+      } catch (err) {
+        console.warn("Failed to parse a11ySettings from localStorage", err);
+      }
     }
     return defaultAccessibilitySettings;
   });
@@ -116,14 +120,16 @@ export default function Home() {
         if (activeCard) activeCard.src = artUrl;
       } else {
         // Track changed! Run GSAP transition visually.
-        runGsapTransition(artUrl, playerState.currentTrack);
+        runGsapTransitionRef.current?.(artUrl, playerState.currentTrack);
       }
       lastTrackIdRef.current = trackId;
     }
   }, [isPlayerActive, playerState.currentTrack]);
 
   // ── Core GSAP Animation Logic ──
-  const runGsapTransition = (newImageUrl: string | null, newTrackData: any = null) => {
+  const runGsapTransitionRef = useRef<((newImageUrl: string | null, newTrackData?: any) => void) | null>(null);
+
+  runGsapTransitionRef.current = (newImageUrl: string | null, newTrackData: any = null) => {
     if (animatingRef.current) return;
     animatingRef.current = true;
 
@@ -214,16 +220,16 @@ export default function Home() {
   };
 
   // ── Main click handler ──
-  const handleMainClick = useCallback(() => {
+  const handleMainClick = () => {
     if (isPlayerActive) {
       // Trigger Spotify skip. The `useEffect` above will run the GSAP transition
       // automatically when Spotify confirms the track actually changed.
       controls.skipToNext();
     } else {
       // Static mode: trigger transition immediately
-      runGsapTransition(null, null);
+      runGsapTransitionRef.current?.(null, null);
     }
-  }, [isPlayerActive, controls]);
+  };
 
   // ── Premium / Login button ──
   const handlePremiumClick = (e: React.MouseEvent) => {
@@ -260,7 +266,7 @@ export default function Home() {
 
     const interval = setInterval(() => {
       if (animatingRef.current) return;
-      runGsapTransition(null, null);
+      runGsapTransitionRef.current?.(null, null);
     }, 5000);
 
     return () => clearInterval(interval);
@@ -305,6 +311,7 @@ export default function Home() {
                     <button onClick={() => setMood("chill")}>✨ Chill</button>
                     <button onClick={() => setMood("energy")}>⚡ Energy</button>
                     <button onClick={() => setMood("focus")}>👁️ Focus</button>
+                    <button onClick={() => setMood("neutral")}>😐 Neutral</button>
                   </div>
                 </div>
                 <div className="boost-dropdown" onClick={(e) => e.stopPropagation()}>
@@ -403,7 +410,7 @@ export default function Home() {
                 </div>
                 {/* Column 3: Album name */}
                 <div className="elem">
-                  <h1>{isPlayerActive && playerState.currentTrack ? (playerState.currentTrack.albumName.toLowerCase() === playerState.currentTrack.name.toLowerCase() ? "Single" : playerState.currentTrack.albumName) : ""}</h1>
+                  <h1>{isPlayerActive && playerState.currentTrack ? (playerState.currentTrack.albumName?.toLowerCase() === playerState.currentTrack.name?.toLowerCase() ? "Single" : playerState.currentTrack.albumName) : ""}</h1>
                   <h1></h1>
                   <h1></h1>
                   <h1></h1>
@@ -422,7 +429,6 @@ export default function Home() {
                 isPlayerActive={isPlayerActive}
                 isLocal={isLocal}
                 currentSlideIndex={currentSlideIndex}
-                staticImages={STATIC_IMAGES}
                 staticTrackData={STATIC_TRACK_DATA}
                 backgroundUrl={currentBgUrl}
               />

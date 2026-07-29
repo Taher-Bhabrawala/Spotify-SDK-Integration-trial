@@ -9,7 +9,7 @@ import { useCallback } from "react";
 
 export function useActivePlayer(
   isLoggedIn: boolean,
-  mood: "chill" | "energy" | "focus"
+  mood: "chill" | "energy" | "focus" | "neutral"
 ): {
   state: SpotifyPlayerState;
   controls: SpotifyPlayerControls;

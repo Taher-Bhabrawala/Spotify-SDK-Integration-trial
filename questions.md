@@ -163,3 +163,36 @@ The browser's rule is simple: **A webpage can only read data (like text or pixel
 2. Displaying the image via a simple `<img src="...">` is always allowed (you can *show* images from anywhere).
 3. However, our `useImageBrightness` hook tries to load the image onto a `<canvas>` and then use `ctx.getImageData()` to mathematically read the exact RGB values of the pixels.
 4. Because we are trying to *read the data* of an image from a different domain (`i.scdn.co`), the browser throws a CORS security error to stop us, unless Spotify's server attaches a specific CORS header (`Access-Control-Allow-Origin: *`) to the image when it sends it. If they don't, our brightness detection silently fails!
+
+---
+
+### Question 8: Retaining Complex Technical Architecture Across Context Switches
+**Date:** July 24, 2026
+
+**Question:**
+*This project has so many complex moving parts (Web Audio API, FFT, AnalyserNodes, frequency distribution, WebGL shaders, synthesizers, Spotify Web SDK). How can I as a human retain and remember all of this after 3-6 months when moving on to other stacks like Python, Cloud Computing, or MCPs?*
+
+**Short Answer:**
+When switching tech stacks, it is completely normal to forget exact code syntax. Senior engineers don't try to memorize syntax — they focus on storing the architectural mental models so "Future You" can re-download the context in minutes.
+
+Here are the 5 core strategies for long-term technical retention:
+
+1. **Don't Memorize Syntax, Memorize the "Pipeline"**
+   Syntax like `audioCtx.createAnalyser()` can be looked up in 2 seconds. What matters is remembering the pipeline:
+   `Audio Source -> AnalyserNode -> getByteFrequencyData() -> Frequency Bin Ranges (Bass/Mid/High) -> Visualizer / Shader Uniforms`.
+   If you remember the pipeline, recreating or editing the code is trivial.
+
+2. **Comment the "Why", Not the "What"**
+   Code tells you *what* it does; comments should tell you *why* you made a specific design decision.
+   - *Weak comment:* `// Set fftSize to 4096`
+   - *Strong comment:* `// Using fftSize 4096 to get 2048 bins (~10.7Hz resolution) so sub-bass frequencies can be cleanly isolated without visual jitter.`
+
+3. **Build an Isolated Sandbox**
+   Instead of digging through React hooks, Next.js routing, and GSAP just to inspect Web Audio logic, isolate the raw Web Audio / FFT code into a tiny 50-line standalone HTML/JS file. Seeing the core math without framework clutter makes it click instantly when returning months later.
+
+4. **Keep a Project Knowledge Base / Second Brain**
+   Maintain a high-level `architecture.md` or `project_knowledge_base.md` summarizing how modules connect (e.g., how `useActivePlayer` routes Spotify vs. local playback, how `useChillSynthesizer` uses decoupled random timers, or how `FocusScene` uses wave interference).
+
+5. **Record a 5-Minute Screen Walkthrough (Loom)**
+   Record a quick 5-minute video talking through your most complex files. Hearing your past self explain your own code out loud is the single fastest way to restore full mental context.
+
