@@ -65,7 +65,7 @@ body, html {
 
 /* Nav Logo Micro-Sizing */
 #nleft img {
-    height: 50px; /* Keeps the Spotify asset compact and elegant */
+    height: 65px; /* Scaled up for crisp, prominent brand presence */
     width: auto;
     object-fit: contain;
     opacity: 0.95;

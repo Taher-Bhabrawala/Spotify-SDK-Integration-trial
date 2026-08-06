@@ -302,7 +302,12 @@ export default function Home() {
           <div id="workingarea">
             <div id="nav" className={brightness.navIsLight ? "force-pill" : ""}>
               <div id="nleft">
-                <img src="/images/Spotifylogo.png" alt="Spotify Logo" />
+                <img
+                  src="/images/Animifylogo.png"
+                  alt="Animify Logo"
+                  onClick={(e) => e.stopPropagation()}
+                  style={{ cursor: "default" }}
+                />
                 <div className="mood-dropdown" onClick={(e) => e.stopPropagation()}>
                   <button className="mood-dropbtn">
                     <span>Mood: {mood}</span>
